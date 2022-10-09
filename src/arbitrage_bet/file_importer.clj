@@ -6,13 +6,21 @@
   ["betclic.json", "bwin.json", "parionssport.json", "unibet.json", "winamax.json"])
 
 (defn get-repertory []
-  "C:\\Users\\GLL\\Documents\\scrapper node js\\json\\")
+  "C:\\Users\\Louis\\Documents\\my code\\scrapper-odds\\json\\")
 
 (defn get-full-name [filename]
   (str (get-repertory) filename))
 
 (defn read-file [filename]
   (json/read-str (slurp (get-full-name filename))))
+
+(defn date-value-writer [key value]
+  (if (= key :date)
+    (.toString value)
+    value))
+
+(defn export-result [data]
+  (spit (get-full-name "export.json") (json/write-str data :value-fn date-value-writer)))
 
 (defn load-data []
   (reduce

@@ -1,32 +1,68 @@
 (ns arbitrage-bet.arbitrage
-  (:require [arbitrage-bet.file-importer :as fi]))
+  (:require [arbitrage-bet.file-importer :as fi]
+            [arbitrage-bet.levenshtein :as l]
+            [java-time.api :as jt]))
 
-(defn match-key [match]
+(defn gen-name [match]
   (str (:nameTeam1 match) " - " (:nameTeam2 match)))
 
-(defn add-match [map key match]
-  (let [matchs (get map key)
-        matchs-u (conj matchs match)]
-    (conj map {key matchs-u})))
+(defn create-match-quotes [match]
+  {:date (:date match)
+   :name (gen-name match)
+   :matches [match]})
+
+(defn add-match [quotes match]
+  (let [matches (:matches quotes)
+        matches-u (conj matches match)]
+    (conj quotes {:matches matches-u})))
+
+(defn name-match-matching? [candidate match]
+  (> 10 (l/levenshtein (:name candidate) (gen-name match))))
+
+(defn date-time-matching? [candidate match]
+  (< (jt/time-between (:date candidate)
+                      (:date match) :minutes)
+     15))
+
+(defn match-matching? [candidate match]
+  (and (name-match-matching? candidate match)
+       (date-time-matching? candidate match)))
+
+(defn replace-in [v quotes index]
+  (vec (concat (subvec v 0 index)
+               [quotes]
+               (subvec v (inc index)))))
+
+(defn replace-or-add
+  ([vec match]
+   (replace-or-add vec match 0))
+  ([vec match index]
+   (if (= (.size vec) index)
+     (conj vec (create-match-quotes match))
+     (if (match-matching? (.get vec index) match)
+       (replace-in vec (add-match (.get vec index) match) index)
+       (recur vec match (inc index))))))
 
 (defn sort-by-match [data]
   (reduce
-    (fn [map-by-match match]
-      (let [key (match-key match)]
-        (if (empty? (get map-by-match key))
-          (conj map-by-match {key [match]})
-          (add-match map-by-match key match))))
-    {}
+    replace-or-add
+    []
     data))
 
 (defn stat [data]
   (reduce
     (fn [result [k v]]
-      (conj result {(.size v) (+ 1 (get result (.size v)))}))
+      (if (nil? v)
+        (prn "Nil key")
+        (if (nil? (get result (.size v)))
+          (prn "size: " (.size v))
+          (conj result {(.size v) (+ 1 (get result (.size v)))}))))
     {0 0 1 0 2 0 3 0 4 0 5 0}
     data))
 
 (defn find-arbitrage []
-  (-> (fi/load-data)
-      (sort-by-match)
-      (stat)))
+  (let [result (-> (fi/load-data)
+                   (sort-by-match))]
+    (do
+      (fi/export-result result)
+      (stat result))))
