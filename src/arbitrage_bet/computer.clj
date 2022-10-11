@@ -41,12 +41,12 @@
     (fn [v x]
       (conj v {:name   (:name x)
                :date   (:date x)
-               :result (compute-quote (:matches x))}))
+               :result (compute-quote (:quotes x))}))
     []
     quotes))
 
 (defn not-eligible [quote]
-  (let [count-matches (count (:matches quote))]
+  (let [count-matches (count (:quotes quote))]
     (and (> count-matches 1)
          (<= count-matches 5))))
 
