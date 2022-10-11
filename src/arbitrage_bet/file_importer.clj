@@ -22,6 +22,9 @@
 (defn export-result [data]
   (spit (get-full-name "export.json") (json/write-str data :value-fn date-value-writer)))
 
+(defn import-result []
+  (json/read-str (slurp (get-full-name "export.json"))))
+
 (defn load-data []
   (reduce
     (fn [datas file]

@@ -1,7 +1,8 @@
 (ns arbitrage-bet.arbitrage
   (:require [arbitrage-bet.file-importer :as fi]
             [arbitrage-bet.levenshtein :as l]
-            [java-time.api :as jt]))
+            [java-time.api :as jt]
+            [arbitrage-bet.computer :as c]))
 
 (defn gen-name [match]
   (str (:nameTeam1 match) " - " (:nameTeam2 match)))
@@ -20,8 +21,8 @@
   (> 10 (l/levenshtein (:name candidate) (gen-name match))))
 
 (defn date-time-matching? [candidate match]
-  (< (jt/time-between (:date candidate)
-                      (:date match) :minutes)
+  (< (Math/abs (jt/time-between (:date candidate)
+                                (:date match) :minutes))
      15))
 
 (defn match-matching? [candidate match]
@@ -49,20 +50,12 @@
     []
     data))
 
-(defn stat [data]
-  (reduce
-    (fn [result [k v]]
-      (if (nil? v)
-        (prn "Nil key")
-        (if (nil? (get result (.size v)))
-          (prn "size: " (.size v))
-          (conj result {(.size v) (+ 1 (get result (.size v)))}))))
-    {0 0 1 0 2 0 3 0 4 0 5 0}
-    data))
-
 (defn find-arbitrage []
-  (let [result (-> (fi/load-data)
-                   (sort-by-match))]
-    (do
-      (fi/export-result result)
-      (stat result))))
+  (-> (fi/load-data)
+      (sort-by-match)
+      (c/compute-quotes)
+      (fi/export-result)))
+
+(defn test-computing []
+  (-> (fi/import-result)
+      (c/compute-quotes)))
