@@ -112,4 +112,5 @@
     "BWIN" (parse-bwin date)
     "PARIONSSPORT" (parse-ps date)
     "WINAMAX" (parse-winamax date)
-    "UNIBET" (parse-unibet date)))
+    "UNIBET" (parse-unibet date)
+    "BARRIEREBET"))

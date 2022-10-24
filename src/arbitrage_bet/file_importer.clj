@@ -3,10 +3,10 @@
             [arbitrage-bet.file-formatter :as f]))
 
 (defn get-list-of-files []
-  ["betclic.json", "bwin.json", "parionssport.json", "unibet.json", "winamax.json"])
+  (seq (.list (clojure.java.io/file (arbitrage-bet.file-importer/get-repertory)))))
 
 (defn get-repertory []
-  "C:\\Users\\Louis\\Documents\\my code\\scrapper-odds\\json\\")
+  "C:\\Users\\GLL\\Documents\\scrapper node js\\json\\")
 
 (defn get-full-name [filename]
   (str (get-repertory) filename))

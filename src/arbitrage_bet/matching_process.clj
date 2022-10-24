@@ -1,8 +1,14 @@
 (ns arbitrage-bet.matching-process
-  (:require [arbitrage-bet.levenshtein :as l]))
+  (:require [arbitrage-bet.levenshtein :as l]
+            [java-time.api :as jt]))
 
-(defn not-excluded? [leven candidate]
-  (>= (.length (:name candidate)) leven))
+(defn same-day [match quote]
+  (= (jt/as (:date match) :year :month-of-year :day-of-month)
+     (jt/as (:date quote) :year :month-of-year :day-of-month)))
+
+(defn not-excluded? [leven match quote]
+  (and (>= (/ (.length (:name match)) 2) leven)
+       (same-day match quote)))
 
 (defn gen-name [quote]
   (str (:nameTeam1 quote) " - " (:nameTeam2 quote)))
@@ -45,7 +51,7 @@
    :added? (:added? v)})
 
 (defn replace-quote [v match quote leven]
-  (let [quotes (filter #(= (:site quote) (:site %)) (:quotes match))
+  (let [quotes (filter #(not= (:site quote) (:site %)) (:quotes match))
         match-u (->> (conj quotes (add-leven quote leven))
                      (hash-map :quotes)
                      (conj match))]
@@ -66,7 +72,7 @@
 
 (defn add-if-best-match [v match quote]
   (let [leven (l/levenshtein (:name match) (gen-name quote))]
-    (if (not-excluded? leven match)
+    (if (not-excluded? leven match quote)
       (update-or-replace-if-best v match quote leven)
       (conj-in-v-struct v match))))
 

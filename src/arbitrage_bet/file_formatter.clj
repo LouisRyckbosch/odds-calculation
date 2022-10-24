@@ -11,7 +11,8 @@
 (defn format-team-name [name]
   (-> (deaccent name)
       (.replaceAll "\\s" "")
-      (.toUpperCase )))
+      (.toUpperCase)
+      (.replaceAll "CLUB" "")))
 
 (defn get-date [match]
   (if-let [time (get match "time")]
