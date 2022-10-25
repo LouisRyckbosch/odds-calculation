@@ -106,11 +106,43 @@
         [hh mm] (map #(Long/valueOf %) (str/split time #":"))]
     (java-time.api/local-date-time year month day hh mm)))
 
+(defn parse-barriere [date]
+  (jt/local-date-time))
+
+(defn france-paris [date]
+  (jt/local-date-time))
+
+(defn parse-date-netbet [date]
+  (cond
+    (.contains date "Auj.") (jt/local-date)
+    (.contains date "Dem.") (jt/plus (jt/local-date) (jt/days 1))
+    :else (let [[day month] (map #(Long/valueOf %) (str/split date #"/"))
+                year (jt/as (jt/local-date) :year)]
+            (java-time.api/local-date year month day)))
+  )
+
+(defn parse-netbet [date]
+  (let [[date time] (str/split date "\n")
+        date (parse-date-netbet date)
+        [year month day] (jt/as date :year :month-of-year :day-of-month)
+        [hh mm] (map #(Long/valueOf %) (str/split time #":"))]
+    (java-time.api/local-date-time year month day hh mm)))
+
+(defn parse-france [date])
+
+(defn parse-pmu [date])
+
+(defn parse-vbet)
+
 (defn handle-dates [date site]
   (case site
+    "BARRIEREBET" (parse-barriere date)
     "BETCLIC" (parse-betclic date)
     "BWIN" (parse-bwin date)
+    "FRANCEPARIS" (parse-france date)
+    "NETBET" (parse-netbet date)
     "PARIONSSPORT" (parse-ps date)
-    "WINAMAX" (parse-winamax date)
+    "PMU" (parse-pmu date)
     "UNIBET" (parse-unibet date)
-    "BARRIEREBET"))
+    "VBET" (parse-vbet date)
+    "WINAMAX" (parse-winamax date)))

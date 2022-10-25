@@ -2,11 +2,11 @@
   (:require [clojure.data.json :as json]
             [arbitrage-bet.file-formatter :as f]))
 
-(defn get-list-of-files []
-  (seq (.list (clojure.java.io/file (arbitrage-bet.file-importer/get-repertory)))))
-
 (defn get-repertory []
-  "C:\\Users\\GLL\\Documents\\scrapper node js\\json\\")
+  "C:\\Users\\Louis\\Documents\\my code\\scrapper-odds\\json\\")
+
+(defn get-list-of-files []
+  (seq (.list (clojure.java.io/file (get-repertory)))))
 
 (defn get-full-name [filename]
   (str (get-repertory) filename))
