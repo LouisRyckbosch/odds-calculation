@@ -188,16 +188,30 @@
         [hour mm] (convert-time-zebet time)]
     (java-time.api/local-date-time year month day hour mm)))
 
+(defn parse-pokerstars [date]
+  (let [[date time] (str/split date #" -  ")
+        date (second (str/split date #", "))
+        [hh mm] (map #(Long/valueOf %) (str/split (subs time 0 5) #":"))]
+    (java-time.api/local-date-time (jt/as (jt/local-date) :year)
+                                   (month-verbose-to-month-vbet (subs date 3 6))
+                                   (Long/valueOf (subs date 0 2))
+                                   hh
+                                   mm)))
+
 (defn handle-dates [date site]
-  (case site
-    "BARRIEREBET" (parse-barriere date)
-    "BETCLIC" (parse-betclic date)
-    "BWIN" (parse-bwin date)
-    "FRANCEPARIS" (parse-france date)
-    "NETBET" (parse-netbet date)
-    "PARIONSSPORT" (parse-ps date)
-    "PMU" (parse-pmu date)
-    "UNIBET" (parse-unibet date)
-    "VBET" (parse-vbet date)
-    "WINAMAX" (parse-winamax date)
-    "ZEBET" (parse-zebet date)))
+  (try (case site
+         "BARRIEREBET" (parse-barriere date)
+         "BETCLIC" (parse-betclic date)
+         "BWIN" (parse-bwin date)
+         "FRANCEPARIS" (parse-france date)
+         "NETBET" (parse-netbet date)
+         "PARIONSSPORT" (parse-ps date)
+         "PMU" (parse-pmu date)
+         "POKERSTARS" (parse-pokerstars date)
+         "UNIBET" (parse-unibet date)
+         "VBET" (parse-vbet date)
+         "WINAMAX" (parse-winamax date)
+         "ZEBET" (parse-zebet date))
+       (catch Exception e
+         (do (.printStackTrace e)
+             (jt/local-date-time)))))

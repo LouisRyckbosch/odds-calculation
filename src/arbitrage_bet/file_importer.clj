@@ -3,7 +3,10 @@
             [arbitrage-bet.file-formatter :as f]))
 
 (defn get-repertory []
-  "C:\\Users\\GLL\\Documents\\scrapper node js\\json\\")
+  "C:\\Users\\Louis\\Documents\\my code\\scrapper-odds\\json\\")
+
+(defn get-name-export []
+  "C:\\Users\\Louis\\Documents\\result.json")
 
 (defn get-list-of-files []
   (seq (.list (clojure.java.io/file (get-repertory)))))
@@ -20,7 +23,7 @@
     value))
 
 (defn export-result [data]
-  (spit (get-full-name "export.json") (json/write-str data :value-fn date-value-writer)))
+  (spit (get-name-export) (json/write-str data :value-fn date-value-writer)))
 
 (defn import-result []
   (json/read-str (slurp (get-full-name "export.json"))))
