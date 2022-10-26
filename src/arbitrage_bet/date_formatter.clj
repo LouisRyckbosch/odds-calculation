@@ -118,21 +118,56 @@
     (.contains date "Dem.") (jt/plus (jt/local-date) (jt/days 1))
     :else (let [[day month] (map #(Long/valueOf %) (str/split date #"/"))
                 year (jt/as (jt/local-date) :year)]
-            (java-time.api/local-date year month day)))
-  )
+            (jt/local-date year month day))))
 
 (defn parse-netbet [date]
   (let [[date time] (str/split date "\n")
         date (parse-date-netbet date)
         [year month day] (jt/as date :year :month-of-year :day-of-month)
         [hh mm] (map #(Long/valueOf %) (str/split time #":"))]
+    (jt/local-date-time year month day hh mm)))
+
+(defn parse-france-date [date]
+  (cond
+    (.equals "AUJ" date) (jt/local-date)
+    :else (let [[day month] (map #(Long/valueOf %) (str/split date #"/"))]
+            (jt/local-date (jt/as (jt/local-date) :year)
+                           month
+                           day))))
+
+(defn parse-france-time [time]
+  (if (.contains time "'")
+    [(jt/as (jt/local-date-time) :hour-of-day) 00]
+    (map #(Long/valueOf %) (str/split time #":"))))
+
+(defn parse-france [date]
+  (let [[date time] (str/split date #" - ")
+        date (parse-france-date date)
+        [year month day] (jt/as date :year :month-of-year :day-of-month)
+        [hh mm] (parse-france-time time)]
     (java-time.api/local-date-time year month day hh mm)))
 
-(defn parse-france [date])
+(defn parse-pmu [date]
+  (let [[date time] (str/split date #"#")
+        [year month day] (map #(Long/valueOf %) (str/split date #"-"))
+        [hh mm] (map #(Long/valueOf %) (str/split time #"h"))]
+    (java-time.api/local-date-time year month day hh mm)))
 
-(defn parse-pmu [date])
+(defn month-verbose-to-month-vbet [month]
+  (let [months (->> (month-formatted)
+                    (map #(subs % 0 3)))
+        month (-> (subs month 0 3)
+                  (.toUpperCase))]
+    (+ 1 (.indexOf months month))))
 
-(defn parse-vbet)
+(defn parse-vbet [date]
+  (let [date (subs date 5)
+        [day month-verbose year] (str/split date #" ")]
+    (java-time.api/local-date-time (Long/valueOf year)
+                                   (month-verbose-to-month-vbet month-verbose)
+                                   (Long/valueOf day)
+                                   12
+                                   00)))
 
 (defn handle-dates [date site]
   (case site
