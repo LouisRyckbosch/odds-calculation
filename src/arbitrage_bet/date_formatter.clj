@@ -67,19 +67,19 @@
 
 (defn parse-ps [date-and-time]
   (let [[date time] (split-date-time-ps-unibet date-and-time)
-       date (parse-date-ps-unibet date)
-       [year month day] (jt/as date :year :month-of-year :day-of-month)
-       [hh mm] (map #(Long/valueOf %) (str/split (str/trim time) #"h"))]
-   (java-time.api/local-date-time year month day hh mm)))
+        date (parse-date-ps-unibet date)
+        [year month day] (jt/as date :year :month-of-year :day-of-month)
+        [hh mm] (map #(Long/valueOf %) (str/split (str/trim time) #"h"))]
+    (java-time.api/local-date-time year month day hh mm)))
 
 (defn translate-day [day]
   (case day
-    "LUNDI"    :monday
-    "MARDI"    :tuesday
+    "LUNDI" :monday
+    "MARDI" :tuesday
     "MERCREDI" :wednesday
-    "JEUDI"    :thursday
+    "JEUDI" :thursday
     "VENDREDI" :friday
-    "SAMEDI"   :saturday
+    "SAMEDI" :saturday
     "DIMANCHE" :sunday))
 
 (defn parse-day-winamax [day]
@@ -169,6 +169,25 @@
                                    12
                                    00)))
 
+(defn parse-date-zebet [date]
+  [(jt/as (jt/local-date) :year)
+   (month-verbose-to-month-vbet date)
+   (Long/valueOf (subs date 5 7))])
+
+(defn convert-time-zebet [time]
+  (let [[time ampm] (str/split time #" ")
+        [hour min] (map #(Long/valueOf %) (str/split time #":"))]
+    (if (.equals "am" ampm)
+      [hour min]
+      [(+ 12 hour) min])))
+
+(defn parse-zebet [date]
+  (let [time (subs date 8)
+        date (subs date 0 8)
+        [year month day] (parse-date-zebet date)
+        [hour mm] (convert-time-zebet time)]
+    (java-time.api/local-date-time year month day hour mm)))
+
 (defn handle-dates [date site]
   (case site
     "BARRIEREBET" (parse-barriere date)
@@ -180,4 +199,5 @@
     "PMU" (parse-pmu date)
     "UNIBET" (parse-unibet date)
     "VBET" (parse-vbet date)
-    "WINAMAX" (parse-winamax date)))
+    "WINAMAX" (parse-winamax date)
+    "ZEBET" (parse-zebet date)))
