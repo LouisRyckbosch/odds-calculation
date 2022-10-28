@@ -3,8 +3,10 @@
             [java-time.api :as jt]))
 
 (defn same-day [match quote]
-  (= (jt/as (:date match) :year :month-of-year :day-of-month)
-     (jt/as (:date quote) :year :month-of-year :day-of-month)))
+  (if (or (= (:date match) :undefined) (= (:date quote) :undefined))
+    true
+    (= (jt/as (:date match) :year :month-of-year :day-of-month)
+       (jt/as (:date quote) :year :month-of-year :day-of-month))))
 
 (defn not-excluded? [leven match quote]
   (and (>= (/ (.length (:name match)) 2) leven)
@@ -85,6 +87,18 @@
     (if (not (:added? v-quote-added))
       (create-and-add (:data v-quote-added) quote)
       (:data v-quote-added))))
+
+(defn index-to-log [v]
+  (let [data [1 2 3 4]]
+    (map #(int (/ (* (.length v) %) 10)) data)))
+
+(defn matching-process-with-info [quotes]
+  (let []
+    (reduce
+      (fn [v quote]
+        (add-quote-to-vec v quote))
+      []
+      quotes)))
 
 (defn matching-process [quotes]
   (reduce

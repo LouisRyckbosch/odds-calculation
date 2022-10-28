@@ -1,10 +1,18 @@
 (ns arbitrage-bet.computer)
 
-(defn calc-implied-probability [quote]
+(defn calc-implied-probability [quotes]
   (reduce (fn [vol quote]
             (+ (/ 1 quote) vol))
           0
-          quote))
+          quotes))
+
+(defn safe-calc-implied-probability [team1 draw team2]
+  (try (calc-implied-probability (map first [team1 draw team2]))
+       (catch Exception e (do (prn (str "Issue computing quote for : "
+                                        (first team1) " / " (second team1)
+                                        ", " (first draw) " / " (second draw)
+                                        ", " (first team2) " / " (second team2)))
+                              100))))
 
 (defn collect-quote [match key]
   (try
@@ -30,7 +38,7 @@
 
 (defn compute-quote [quote]
   (let [[team1 draw team2] (best-by-outcome quote)]
-    {:implied-proba (calc-implied-probability (map first [team1 draw team2]))
+    {:implied-proba (safe-calc-implied-probability team1 draw team2)
      :team1 team1
      :team2 team2
      :draw draw

@@ -121,7 +121,7 @@
             (jt/local-date year month day))))
 
 (defn parse-netbet [date]
-  (let [[date time] (str/split date "\n")
+  (let [[date time] (str/split date #"\n")
         date (parse-date-netbet date)
         [year month day] (jt/as date :year :month-of-year :day-of-month)
         [hh mm] (map #(Long/valueOf %) (str/split time #":"))]
@@ -199,19 +199,16 @@
                                    mm)))
 
 (defn handle-dates [date site]
-  (try (case site
-         "BARRIEREBET" (parse-barriere date)
-         "BETCLIC" (parse-betclic date)
-         "BWIN" (parse-bwin date)
-         "FRANCEPARIS" (parse-france date)
-         "NETBET" (parse-netbet date)
-         "PARIONSSPORT" (parse-ps date)
-         "PMU" (parse-pmu date)
-         "POKERSTARS" (parse-pokerstars date)
-         "UNIBET" (parse-unibet date)
-         "VBET" (parse-vbet date)
-         "WINAMAX" (parse-winamax date)
-         "ZEBET" (parse-zebet date))
-       (catch Exception e
-         (do (.printStackTrace e)
-             (jt/local-date-time)))))
+  (case site
+    "BARRIEREBET" (parse-barriere date)
+    "BETCLIC" (parse-betclic date)
+    "BWIN" (parse-bwin date)
+    "FRANCEPARIS" (parse-france date)
+    "NETBET" (parse-netbet date)
+    "PARIONSSPORT" (parse-ps date)
+    "PMU" (parse-pmu date)
+    "POKERSTARS" (parse-pokerstars date)
+    "UNIBET" (parse-unibet date)
+    "VBET" (parse-vbet date)
+    "WINAMAX" (parse-winamax date)
+    "ZEBET" (parse-zebet date)))

@@ -19,6 +19,12 @@
     (str (get match "date") "#" time)
     (get match "date")))
 
+(defn handle-date [match site]
+  (try (df/handle-dates (get-date match) site)
+       (catch Exception e (do (prn (str "Date Invalid on match : " (get match "match")
+                                        " | Site : " + (str site)))
+                              :undefined))))
+
 (defn format-match [match site]
   {:match      (get match "match")
    :site       site
@@ -27,7 +33,7 @@
    :quoteDraw  (get match "quoteDraw")
    :nameTeam1  (format-team-name (get match "nameTeam1"))
    :nameTeam2  (format-team-name (get match "nameTeam2"))
-   :date       (df/handle-dates (get-date match) site)})
+   :date       (handle-date match site)})
 
 (defn format-file [json]
   (let [site (get json "site")
