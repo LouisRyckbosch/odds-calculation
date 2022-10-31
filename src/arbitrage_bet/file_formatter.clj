@@ -22,15 +22,21 @@
 (defn handle-date [match site]
   (try (df/handle-dates (get-date match) site)
        (catch Exception e (do (prn (str "Date Invalid on match : " (get match "match")
-                                        " | Site : " + (str site)))
+                                        " | Site : " (str site)))
                               :undefined))))
+
+(defn parse-quote [quote match site]
+  (try (Double/parseDouble (.replace quote "," "."))
+       (catch Exception e (do (prn (str "Quote invalid on match : " (get match "match")
+                                        " | Site : " (str site)))
+                              nil))))
 
 (defn format-match [match site]
   {:match      (get match "match")
    :site       site
-   :quoteTeam1 (get match "quoteTeam1")
-   :quoteTeam2 (get match "quoteTeam2")
-   :quoteDraw  (get match "quoteDraw")
+   :quoteTeam1 (parse-quote (get match "quoteTeam1") match site)
+   :quoteTeam2 (parse-quote (get match "quoteTeam2") match site)
+   :quoteDraw  (parse-quote (get match "quoteDraw") match site)
    :nameTeam1  (format-team-name (get match "nameTeam1"))
    :nameTeam2  (format-team-name (get match "nameTeam2"))
    :date       (handle-date match site)})

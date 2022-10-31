@@ -8,9 +8,17 @@
     (= (jt/as (:date match) :year :month-of-year :day-of-month)
        (jt/as (:date quote) :year :month-of-year :day-of-month))))
 
+(defn limit [string]
+  (- (* (.length string) 2) 1))
+
+(defn teams-name-minimal-match? [match quote]
+  (and (>= (limit (:nameTeam1 quote)) (l/levenshtein (:name match) (:nameTeam1 quote)))
+       (>= (limit (:nameTeam2 quote)) (l/levenshtein (:name match) (:nameTeam2 quote)))))
+
 (defn not-excluded? [leven match quote]
   (and (>= (/ (.length (:name match)) 2) leven)
-       (same-day match quote)))
+       (same-day match quote)
+       (teams-name-minimal-match? match quote)))
 
 (defn gen-name [quote]
   (str (:nameTeam1 quote) " - " (:nameTeam2 quote)))
@@ -19,9 +27,11 @@
   (conj quote {:leven-score leven}))
 
 (defn create-match [quote]
-  {:date   (:date quote)
-   :name   (gen-name quote)
-   :quotes [(add-leven quote 0)]})
+  {:date      (:date quote)
+   :name      (gen-name quote)
+   :nameTeam1 (:nameTeam1 quote)
+   :nameTeam2 (:nameTeam2 quote)
+   :quotes    [(add-leven quote 0)]})
 
 (defn add-quote [match quote leven]
   (let [quotes (:quotes match)
@@ -36,9 +46,9 @@
        (filter #(= (:site quote) (:site %)))))
 
 (defn already-have-quote-from-site? [match quote]
-   (->> (quote-from-site match quote)
-        empty?
-        not))
+  (->> (quote-from-site match quote)
+       empty?
+       not))
 
 (defn replace-in-matches [matches match]
   (-> (filter #(not= (:name match) (:name %)) matches)
@@ -81,22 +91,28 @@
 (defn add-quote-to-vec [v quote]
   (let [v-quote-added (reduce (fn [v-up match]
                                 (add-if-best-match v-up match quote))
-                              {:data  []
+                              {:data   []
                                :added? false}
                               v)]
     (if (not (:added? v-quote-added))
       (create-and-add (:data v-quote-added) quote)
       (:data v-quote-added))))
 
-(defn index-to-log [v]
-  (let [data [1 2 3 4]]
-    (map #(int (/ (* (.length v) %) 10)) data)))
+(defn gen-index-to-log [v]
+  (map #(int (/ (* (.length v) %) 20)) (range 20)))
+
+(defn log-progress [index indexes]
+  (if (.contains indexes index)
+    (prn (str "Matching process: " (* (.indexOf indexes index) 5) "%"))))
 
 (defn matching-process-with-info [quotes]
-  (let []
+  (let [quotes (vec quotes)
+        index-to-log (gen-index-to-log quotes)]
     (reduce
       (fn [v quote]
-        (add-quote-to-vec v quote))
+        (do
+          (log-progress (.indexOf quotes quote) index-to-log)
+          (add-quote-to-vec v quote)))
       []
       quotes)))
 

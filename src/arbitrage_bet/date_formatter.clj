@@ -150,7 +150,7 @@
 (defn parse-pmu [date]
   (let [[date time] (str/split date #"#")
         [year month day] (map #(Long/valueOf %) (str/split date #"-"))
-        [hh mm] (map #(Long/valueOf %) (str/split time #"h"))]
+        [hh mm] [12 00]]
     (java-time.api/local-date-time year month day hh mm)))
 
 (defn month-verbose-to-month-vbet [month]
