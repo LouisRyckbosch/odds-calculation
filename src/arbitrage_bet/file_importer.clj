@@ -22,7 +22,7 @@
     (.toString value)
     value))
 
-(defn export-result [data]
+(defn eexport-result [data]
   (spit (get-name-export) (json/write-str data :value-fn date-value-writer)))
 
 (defn import-result []

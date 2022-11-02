@@ -15,10 +15,25 @@
   (and (>= (limit (:nameTeam1 quote)) (l/levenshtein (:name match) (:nameTeam1 quote)))
        (>= (limit (:nameTeam2 quote)) (l/levenshtein (:name match) (:nameTeam2 quote)))))
 
+(defn calc-ratio [x y]
+  (if (> x y)
+    (/ x y)
+    (/ y x)))
+
+(defn check-quote-not-too-good [match quote]
+  (let [match-quote (:quote-main-match match)
+        result (reduce
+                 (fn [x [key value]]
+                   (+ (calc-ratio (key quote) value) x))
+                 0
+                 match-quote)]
+    (> 4.5 result)))
+
 (defn not-excluded? [leven match quote]
   (and (>= (/ (.length (:name match)) 2) leven)
        (same-day match quote)
-       (teams-name-minimal-match? match quote)))
+       (teams-name-minimal-match? match quote)
+       (check-quote-not-too-good match quote)))
 
 (defn gen-name [quote]
   (str (:nameTeam1 quote) " - " (:nameTeam2 quote)))
@@ -26,12 +41,19 @@
 (defn add-leven [quote leven]
   (conj quote {:leven-score leven}))
 
+(defn collect-quote [quote]
+  {:quoteTeam1 (:quoteTeam1 quote)
+   :quoteTeam2 (:quoteTeam2 quote)
+   :quoteDraw  (:quoteDraw quote)}
+  )
+
 (defn create-match [quote]
-  {:date      (:date quote)
-   :name      (gen-name quote)
-   :nameTeam1 (:nameTeam1 quote)
-   :nameTeam2 (:nameTeam2 quote)
-   :quotes    [(add-leven quote 0)]})
+  {:date             (:date quote)
+   :name             (gen-name quote)
+   :nameTeam1        (:nameTeam1 quote)
+   :nameTeam2        (:nameTeam2 quote)
+   :quote-main-match (collect-quote quote)
+   :quotes           [(add-leven quote 0)]})
 
 (defn add-quote [match quote leven]
   (let [quotes (:quotes match)

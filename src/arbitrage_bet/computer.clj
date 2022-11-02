@@ -75,6 +75,4 @@
     datas))
 
 (defn compute-quotes [quotes]
-  (-> (filter not-eligible quotes)
-      (calc-best-implied-probability)
-      (sort-data)))
+  (calc-best-implied-probability quotes))
