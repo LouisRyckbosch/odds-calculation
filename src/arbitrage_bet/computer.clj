@@ -15,11 +15,7 @@
                               100))))
 
 (defn collect-quote [match key]
-  (try
-    [(Float/parseFloat (.replace (key match) "," ".")) (:site match)]
-    (catch Exception e (do (prn (str "Match invalid. Match : " (:match match)
-                                     " | Site : " (:site match)))
-                           [0.0 (:site match)]))))
+    [(key match) (:site match)])
 
 (defn pick-best [array-quote]
   (reduce
