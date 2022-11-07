@@ -11,7 +11,7 @@
     :else (jt/local-date "dd/MM/yyyy" date)))
 
 (defn parse-betclic [date-and-time]
-  (let [[date time] (str/split date-and-time #" ")
+  (let [[date time] (str/split date-and-time #"#")
         date (parse-date-betclic-bwin date)
         [year month day] (jt/as date :year :month-of-year :day-of-month)
         [hh mm] (map #(Long/valueOf %) (str/split time #":"))]
@@ -193,8 +193,8 @@
         date (second (str/split date #", "))
         [hh mm] (map #(Long/valueOf %) (str/split (subs time 0 5) #":"))]
     (java-time.api/local-date-time (jt/as (jt/local-date) :year)
-                                   (month-verbose-to-month-vbet (subs date 3 6))
-                                   (Long/valueOf (subs date 0 2))
+                                   (month-verbose-to-month-vbet (subs date 2 5))
+                                   (Long/valueOf (clojure.string/trim (subs date 0 2)))
                                    hh
                                    mm)))
 

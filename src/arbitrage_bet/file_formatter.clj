@@ -12,7 +12,11 @@
   (-> (deaccent name)
       (.replaceAll "\\s" "")
       (.toUpperCase)
-      (.replaceAll "CLUB" "")))
+      (.replaceAll "CLUB" "")
+      (.replaceAll "SPOR" "")
+      (.replaceAll "AS" "")
+      (.replaceAll "MELBOURNE" "")
+      (.replaceAll "FC" "")))
 
 (defn get-date [match]
   (if-let [time (get match "time")]

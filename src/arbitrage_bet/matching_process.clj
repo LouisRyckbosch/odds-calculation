@@ -9,11 +9,11 @@
        (jt/as (:date quote) :year :month-of-year :day-of-month))))
 
 (defn limit [string]
-  (- (* (.length string) 2) 1))
+  (* (.length string) 1.4))
 
 (defn teams-name-minimal-match? [match quote]
-  (and (>= (limit (:nameTeam1 quote)) (l/levenshtein (:name match) (:nameTeam1 quote)))
-       (>= (limit (:nameTeam2 quote)) (l/levenshtein (:name match) (:nameTeam2 quote)))))
+  (and (>= (limit (:nameTeam1 quote)) (l/levenshtein (:nameTeam1 match) (:nameTeam1 quote)))
+       (>= (limit (:nameTeam2 quote)) (l/levenshtein (:nameTeam2 match) (:nameTeam2 quote)))))
 
 (defn calc-ratio [x y]
   (if (> x y)
@@ -102,7 +102,6 @@
   (if (already-have-quote-from-site? match quote)
     (add-if-best v match quote leven)
     (replace-in-v-struct v (add-quote match quote leven))))
-
 
 (defn add-if-best-match [v match quote]
   (let [leven (l/levenshtein (:name match) (gen-name quote))]
