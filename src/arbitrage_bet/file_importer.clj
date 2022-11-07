@@ -3,10 +3,10 @@
             [arbitrage-bet.file-formatter :as f]))
 
 (defn get-repertory []
-  "C:\\Users\\GLL\\Documents\\scrapper node js\\json\\")
+  "C:\\Users\\Louis\\Documents\\my code\\scrapper-odds\\json\\")
 
 (defn get-name-export []
-  "C:\\Users\\GLL\\Documents\\result.json")
+  "C:\\Users\\Louis\\Documents\\result.json")
 
 (defn get-list-of-files []
   (seq (.list (clojure.java.io/file (get-repertory)))))
