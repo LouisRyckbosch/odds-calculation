@@ -43,21 +43,28 @@
             quote
             quotes)))
 
-(defn link-quotes-between-them [quotes]
+(defn link-quotes-single-day [quotes]
   (reduce (fn [result quote]
             (conj result (add-closest-match quote quotes)))
           []
           quotes))
 
-(defn quotes-by-match [quotes]
-  )
+(defn link-quotes-by-name [quotes]
+  (reduce
+    (fn [col quote-for-one-day]
+      (conj col (link-quotes-single-day quote-for-one-day)))
+    []
+    (val quotes)))
 
 (defn trunc-time-from-date [quote]
   (let [[y m d] (java-time.core/as quote :year :month-of-year :day-of-month)]
     (keyword (.toString (java-time.api/local-date-time y m d 0 0)))))
 
-(defn add-quote [result-map key quote]
-  (conj result-map {key (conj (get result-map key) quote)}))
+(defn add-quote
+  ([result-map key quote]
+   (conj result-map {key (conj (get result-map key) quote)}))
+  ([match quote]
+   (conj match {:quotes (conj (:quotes match) quote)})))
 
 (defn put-to-quote-map [result-map quote]
   (let [date-trunc (trunc-time-from-date (:date quote))
@@ -71,17 +78,6 @@
           {}
           quotes))
 
-(defn filter-nil-date [quotes]
-  (filter #(and (not (nil? (:date %)))
-                (not (= (:date %) :undefined))) quotes))
-
-(defn link-quotes-by-name [quotes]
-  (reduce
-    (fn [col quote-for-one-day]
-      (conj col (link-quotes-single-day quote-for-one-day)))
-    []
-    (val quotes)))
-
 (defn create-match [quote]
   {:date             (:date quote)
    :name             (gen-name quote)
@@ -89,18 +85,25 @@
    :nameTeam2        (:nameTeam2 quote)
    :quotes           [quote]})
 
-(defn add-quote [match quote]
-  (conj match {:quotes (conj (:quotes match) quote)}))
-
 (defn add-to-no-match [quote result]
   (let [undefined (first (filter #(= (:match %) :undefined) result))]
     (if (nil? undefined)
       (conj (create-match quote) {:name :undefined})
       (add-quote undefined quote))))
 
-(defn add-to-results [quote match result]
-  
+(defn find-group [result]
+  (first (filter (fn [x]
+                   (exist)
+                   )
+                 result))
   )
+
+(defn add-to-results [quote match result]
+  (let [match-group (find-group result match)]
+    (if (nil? match-group)
+      (-> (create-match match)
+          (add-quote quote))
+      (add-quote match-group quote))))
 
 (defn regroup-quote [quote quotes results]
   (let [match (first (filter #(match-with-quote quote) quotes))]
@@ -112,6 +115,10 @@
   (reduce
     (fn [col ]))
   )
+
+(defn filter-nil-date [quotes]
+  (filter #(and (not (nil? (:date %)))
+                (not (= (:date %) :undefined))) quotes))
 
 (defn matching-process-with-info [quotes]
   (-> (filter-nil-date quotes)
