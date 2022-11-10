@@ -78,6 +78,9 @@
           {}
           quotes))
 
+(defn gen-name [quote]
+  (str (:nameTeam1 quote) " - " (:nameTeam2 quote)))
+
 (defn create-match [quote]
   {:date             (:date quote)
    :name             (gen-name quote)
@@ -91,12 +94,13 @@
       (conj (create-match quote) {:name :undefined})
       (add-quote undefined quote))))
 
-(defn find-group [result]
-  (first (filter (fn [x]
-                   (exist)
-                   )
-                 result))
-  )
+(defn contains-quote? [match quote]
+  (let [quotes (:quotes match)]
+    (-> (filter #(= (gen-id %) (gen-id quote)) quotes)
+        (first))))
+
+(defn find-group [result quote]
+  (first (filter #(contains-quote? % quote) result)))
 
 (defn add-to-results [quote match result]
   (let [match-group (find-group result match)]
